@@ -1,0 +1,156 @@
+--#############
+--# Grupo 10
+--#############
+
+
+--==============
+-- DB connection
+--==============
+\set dataBase db_medknow_2
+;
+\set userName postgres
+;
+\connect :dataBase :userName
+;
+--==========================
+--==========================
+DROP VIEW IF EXISTS v1_dataset;
+DROP VIEW IF EXISTS v1;
+DROP VIEW IF EXISTS v1_domain;
+DROP VIEW IF EXISTS v1_class;
+DROP VIEW IF EXISTS v2_dataset;
+DROP VIEW IF EXISTS v2_attrType;
+DROP VIEW IF EXISTS vDiseaseName;
+DROP VIEW IF EXISTS vDiseaseID;
+DROP VIEW IF EXISTS vPrescription;
+DROP VIEW IF EXISTS vAstigmatic;
+DROP VIEW IF EXISTS vIsAstigmatic;
+DROP VIEW IF EXISTS vAstigmaticTrueFalse;
+DROP VIEW IF EXISTS vPatientDesease;
+DROP VIEW IF EXISTS vAstigmaticYesFalse;
+---------------------------------
+
+-- DATA IS IN 3ROW HEADER FORMAT 
+-- 1st row -> lists attribute names
+-- 2nd row -> defines types
+-- 3rd row -> defines class
+
+
+create view vDiseaseID(disId, visitId) AS SELECT PATIENT_DISEASE.diseaseId,PATIENT_DISEASE.visitId  FROM PATIENT_DISEASE
+INNER JOIN VISIT on VISIT.visitId = PATIENT_DISEASE.visitId;
+
+--select *
+--from vDiseaseID
+--;
+
+
+create view vDiseaseName(disName, visId) AS SELECT DISEASE.diseaseName, vDiseaseID.visitId FROM DISEASE
+INNER JOIN vDiseaseID on DISEASE.diseaseId = vDiseaseID.disId;
+
+select disName, visId
+from vDiseaseName
+;
+
+
+-- view for prescription column
+create view vPrescription(disName,visId) AS SELECT  vDiseaseName.disName, vDiseaseName.visId FROM vDiseaseName
+WHERE vDiseaseName.disName LIKE 'hypermetrope%' OR vDiseaseName.disName LIKE  'myope%';
+
+SELECT disName,visId from vPrescription;
+  
+-- view for astigmatic column
+
+create view vAstigmatic(disName,visId) AS SELECT  vDiseaseName.disName, vDiseaseName.visId FROM vDiseaseName
+WHERE vDiseaseName.disName LIKE 'astigmatic%' 
+;
+
+-- select * from vAstigmatic;
+
+
+create view vIsAstigmatic(isAstigmatic, visId) as 
+
+SELECT
+  CASE
+    WHEN
+     vAstigmatic.disName = 'astigmatic' 
+       THEN
+          'yes'
+	ELSE
+		  'NO'
+    
+ END AS isAstigmatic, visId
+ FROM
+  vAstigmatic;
+
+create view vPatientDesease(visitId) as select DISTINCT PATIENT_DISEASE.visitId from PATIENT_DISEASE;
+
+
+create view vAstigmaticTrueFalse(isAstigmatic, visitId) AS SELECT  vIsAstigmatic.isAstigmatic, vPatientDesease.visitId FROM vIsAstigmatic FULL JOIN vPatientDesease on  vIsAstigmatic.visId = vPatientDesease.visitId ;
+
+--select * from vAstigmaticTrueFalse;
+
+create view vAstigmaticYesFalse(astigmaticBool, visitId) as
+SELECT
+  CASE
+    WHEN
+     vAstigmaticTrueFalse.isAstigmatic = 'yes' 
+       THEN
+          'yes'
+	ELSE
+		  'no'
+    
+ END AS astigmaticBool, visitId
+ FROM
+  vAstigmaticTrueFalse;
+  
+SELECT * FROM vAstigmaticYesFalse;
+  
+  
+
+
+
+CREATE VIEW v1( age,prescription, astigmatic, tear_rate, lenses) AS SELECT VISIT.age, vPrescription.disName,
+vAstigmaticYesFalse.astigmaticBool, VISIT.tearRate, VISIT.lenses 
+FROM VISIT  
+INNER JOIN vPrescription ON vPrescription.visId = VISIT.visitId
+INNER JOIN vAstigmaticYesFalse ON vAstigmaticYesFalse.visitId = VISIT.visitId ORDER BY VISIT.visitId
+;
+
+--CREATE VIEW v1( age,prescription, tear_rate, lenses) AS SELECT VISIT.age, vPrescription.disName,
+-- VISIT.tearRate, VISIT.lenses
+--FROM VISIT  INNER JOIN vPrescription ON vPrescription.visId = VISIT.visitId
+--;
+
+
+
+SELECT *
+FROM v1
+;
+
+-- domain of data
+CREATE VIEW v1_domain AS SELECT 'discrete' AS CONSTANT_TEXT_VALUE,'discrete' AS CONSTANT_TEXT_VALUE2,'discrete' AS CONSTANT_TEXT_VALUE3,
+'discrete' AS CONSTANT_TEXT_VALUE4, 'discrete' AS CONSTANT_TEXT_VALUE5;
+
+--select * from v1_domain;
+
+-- class
+CREATE VIEW v1_class AS SELECT '' AS EMPTY_SPACE,'' AS EMPTY_SPACE2,'' AS EMPTY_SPACE3,'' AS EMPTY_SPACE4, 'class';
+
+--select * from v1_class;
+
+
+CREATE VIEW v1_dataset(age,prescription, astigmatic, tear_rate, lenses) AS SELECT * FROM v1_domain UNION ALL SELECT * FROM v1_class UNION ALL SELECT age,prescription, astigmatic, tear_rate, lenses from v1;
+
+select * from v1_dataset;
+
+--MUDAR PATH SE NECESSARIO 
+
+\copy (SELECT age,prescription,astigmatic, tear_rate, lenses FROM v1_dataset )  to 'C:\Users\duart\OneDrive\Ambiente de Trabalho\Mestrado\AMD\entrega\part_a\part_a_python\dataset_lenses.csv' with csv HEADER;
+
+
+--COPY (SELECT age,prescription,astigmatic, tear_rate, lenses FROM v1_dataset) TO --'C:\Users\duart\OneDrive\Ambiente de --Trabalho\Mestrado\AMD\scripts\datset_lenses.csv' with CSV HEADER
+--;
+
+
+
+

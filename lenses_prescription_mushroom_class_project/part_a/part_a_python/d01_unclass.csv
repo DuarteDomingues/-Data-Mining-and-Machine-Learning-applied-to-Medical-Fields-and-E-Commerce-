@@ -1,0 +1,6 @@
+age,prescription,astigmatic,tear_rate,lenses
+discrete,discrete,discrete,discrete,discrete
+,,,,class
+young,myope,yes,normal,
+young,hypermetrope,no,reduced,soft
+young,hypermetrope,no,reduced,

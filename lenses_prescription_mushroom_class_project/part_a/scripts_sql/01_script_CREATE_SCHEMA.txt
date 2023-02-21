@@ -1,0 +1,135 @@
+--#############
+--# Grupo 10
+--#############
+
+
+
+--==============
+-- DB connection
+--==============
+\set dataBase db_medknow_2
+;
+\set userName postgres
+;
+\connect :dataBase :userName
+;
+--==========================
+--==========================
+
+
+
+-------------------------------
+-- create the relational schema
+-------------------------------
+DROP TABLE IF EXISTS PATIENT;
+DROP TABLE IF EXISTS VISIT;
+DROP TABLE IF EXISTS DOCTOR;
+DROP TABLE IF EXISTS DISEASE;
+DROP TABLE IF EXISTS PATIENT_DISEASE;
+--------------------------------
+
+------------------------------------------
+--- CREATE TABLES ------------------------
+------------------------------------------
+
+CREATE TABLE PATIENT
+(
+userNumber INT NOT NULL,
+gender boolean NOT NULL,
+name VARCHAR( 255 ) NOT NULL,
+birthDate date NOT NULL
+)
+;
+
+CREATE TABLE DOCTOR
+(
+doctorId INT NOT NULL,
+doctorName VARCHAR( 255 ) NOT NULL
+)
+;
+
+CREATE TABLE VISIT
+(
+	visitId INT NOT NULL,
+	doctorId INT NOT NULL,
+	userNumber INT NOT NULL,
+	tearRate VARCHAR( 255 ) NOT NULL,
+	age VARCHAR( 255 ) NOT NULL,
+	lenses VARCHAR( 255 ) NOT NULL,
+	visitDate date NOT NULL
+		
+)
+;
+
+CREATE TABLE DISEASE
+(
+	diseaseId INT NOT NULL,
+	diseaseName VARCHAR( 255 ) NOT NULL
+)
+;
+
+CREATE TABLE PATIENT_DISEASE(
+	
+	diseaseId INT NOT NULL,
+	visitId INT NOT NULL
+
+)
+;
+
+---------------------------------------------------
+--- ENTITY INGRETITY CONSTRAINTS-------------------
+----(primary key and unique)-----------------------
+---------------------------------------------------
+
+ALTER TABLE PATIENT 
+	ADD CONSTRAINT pk_PATIENT
+	PRIMARY KEY(userNumber);
+
+ALTER TABLE DOCTOR
+	ADD CONSTRAINT pk_DOCTOR
+	PRIMARY KEY(doctorId);
+
+ALTER TABLE VISIT	
+	ADD CONSTRAINT pk_VISIT
+	PRIMARY KEY(visitId);
+
+ALTER TABLE DISEASE
+	ADD CONSTRAINT pk_DISEASE
+	PRIMARY KEY(diseaseId);
+
+ALTER TABLE PATIENT_DISEASE
+	ADD CONSTRAINT pk_PATIENT_DISEASE
+	PRIMARY KEY(diseaseId,visitId);
+	
+	
+--------------------------------------------------------
+---- REFERENCIAL INGRETITY CONSTRAINTS-------------------
+----(foreign key)---------------------------------------
+--------------------------------------------------------
+
+
+--- visit
+
+ALTER TABLE VISIT ADD CONSTRAINT fk1_VISIT
+			FOREIGN KEY(doctorId)
+			REFERENCES DOCTOR(doctorId)
+;
+
+
+ALTER TABLE VISIT ADD CONSTRAINT fk2_VISIT
+			FOREIGN KEY(userNumber)
+			REFERENCES PATIENT(userNumber)
+;
+
+--- patientDisease
+
+ALTER TABLE PATIENT_DISEASE ADD CONSTRAINT fk1_PATIENT_DISEASE
+			FOREIGN KEY(diseaseId)
+			REFERENCES DISEASE(diseaseId)
+;
+
+
+ALTER TABLE PATIENT_DISEASE ADD CONSTRAINT fk2_PATIENT_DISEASE
+			FOREIGN KEY(visitId)
+			REFERENCES VISIT(visitId)
+;

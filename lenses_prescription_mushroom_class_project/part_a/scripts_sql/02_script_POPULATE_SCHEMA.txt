@@ -1,0 +1,231 @@
+--#############
+--# Grupo 10
+--#############
+
+
+--==============
+-- DB connection
+--==============
+\set dataBase db_medknow_2
+;
+\set userName postgres
+;
+\connect :dataBase :userName
+;
+--==========================
+--==========================
+
+
+
+---------------------------------
+DELETE FROM PATIENT;
+DELETE FROM DOCTOR;
+DELETE FROM VISIT;
+DELETE FROM DISEASE;
+DELETE FROM PATIENT_DISEASE;
+---------------------------------
+
+
+
+-- PATIENT
+INSERT INTO PATIENT( userNumber, gender, name, birthDate )
+VALUES ( 1, false, 'taveira', '10-21-1999')
+;
+
+INSERT INTO PATIENT( userNumber, gender, name, birthDate )
+VALUES ( 2, false, 'Madorna', '05-14-1999')
+;
+
+
+
+-- DOCTOR
+INSERT INTO DOCTOR(doctorId,doctorName)
+VALUES(1, 'Joao')
+;
+
+INSERT INTO DOCTOR(doctorId,doctorName)
+VALUES(2, 'Ric')
+;
+
+-- VISIT
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(1,1,1,'normal','young','hard','05-14-2019')
+;
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(2,1,1,'normal','young','soft','05-14-2018')
+;
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(3,1,1,'reduced','young','none','05-14-2017')
+;
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(4,1,1,'normal','young','soft','05-14-2016')
+;
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(5,1,1,'reduced','young','none','05-14-2015')
+;
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(6,1,1,'reduced','presbyopic','none','05-14-1938')
+;
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(7,1,1,'normal','presbyopic','hard','05-14-2014')
+;
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(8,1,1,'reduced','presbyopic','none','05-14-2013')
+;
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(9,1,1,'normal','presbyopic','none','05-14-2012')
+;
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(10,1,1,'normal','presbyopic','soft','05-14-2011')
+;
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(11,1,1,'reduced','presbyopic','none','05-14-2010')
+;
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(12,1,1,'reduced','pre-presbyopic','none','05-14-2009')
+;
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(13,1,1,'normal','pre-presbyopic','hard','05-14-2008')
+;
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(14,1,1,'normal','pre-presbyopic','soft','05-14-2007')
+;
+
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(15,1,1,'normal','pre-presbyopic','none','05-14-2006')
+;
+
+
+INSERT INTO VISIT(visitId,doctorId,userNumber,tearRate,age,lenses,visitDate)
+VALUES(16,1,1,'normal','pre-presbyopic','soft','05-14-2005')
+;
+
+
+
+
+
+
+-- DISEASE
+INSERT INTO DISEASE(diseaseId,diseaseName)
+VALUES(1,'myope')
+;
+
+INSERT INTO DISEASE(diseaseId,diseaseName)
+VALUES(2,'hypermetrope')
+;
+
+INSERT INTO DISEASE(diseaseId,diseaseName)
+VALUES(3,'astigmatic')
+;
+
+-- PATIENT_DISEASE
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(1,1)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(3,1)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(1,2)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(2,3)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(3,3)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(2,4)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(2,5)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(1,6)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(3,6)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(1,7)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(3,7)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(2,8)
+;
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(3,8)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(2,9)
+;
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(3,9)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(2,10)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(2,11)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(1,12)
+;
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(3,12)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(1,13)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(3,13)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(1,14)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(2,15)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(3,15)
+;
+
+INSERT INTO PATIENT_DISEASE(diseaseId,visitId)
+VALUES(2,16)
+;
