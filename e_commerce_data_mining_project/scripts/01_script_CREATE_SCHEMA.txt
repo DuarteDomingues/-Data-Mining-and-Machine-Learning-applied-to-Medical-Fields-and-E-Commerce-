@@ -1,0 +1,64 @@
+
+
+--==============
+-- DB connection
+--==============
+\set dataBase db_e_commerce_sample
+;
+\set userName postgres
+;
+\connect :dataBase :userName
+;
+--==========================
+--==========================
+
+
+
+-------------------------------
+-- create the relational schema
+-------------------------------
+DROP TABLE IF EXISTS TRACK;
+--------------------------------
+ CREATE TABLE TRACK
+ (
+ tracking_record_id BIGINT NOT NULL,
+ date_time          TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+ user_gui           VARCHAR,
+ campaign_id		VARCHAR,
+ product_gui		VARCHAR,
+ company			VARCHAR,
+ link 				VARCHAR,
+ tracking_id		VARCHAR,
+ meio				VARCHAR,
+ ip 				VARCHAR,
+ browswer			VARCHAR,
+ session_id			VARCHAR,
+ referer			VARCHAR,
+ cookie_id			VARCHAR
+)
+;
+
+
+-------------------------------
+-- entity integrity constraints
+-- (primary key and unique)
+-------------------------------
+
+ ALTER TABLE TRACK
+ ADD CONSTRAINT pk_TRACK
+ PRIMARY KEY( tracking_record_id);
+;
+
+
+
+----------------------------------------
+-- referential integrity constraints
+-- (foreign key)
+----------------------------------------
+-- ALTER TABLE xxx
+-- ADD CONSTRAINT fk1_xxx
+--    FOREIGN KEY( C1_R1 )
+--    REFERENCES R1( C1 )
+;
+
+

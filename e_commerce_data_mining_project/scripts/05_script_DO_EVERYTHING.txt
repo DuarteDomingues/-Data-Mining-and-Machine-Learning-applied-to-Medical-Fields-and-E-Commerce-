@@ -1,0 +1,323 @@
+
+----------
+-- DB name
+----------
+\set dataBase db_e_commerce_sample
+;
+
+-----------------------
+-- Remode and Create DB
+-----------------------
+
+\echo "Remove Data Base" :dataBase
+;
+
+DROP DATABASE IF EXISTS :dataBase
+;
+
+
+\echo "Create Data Base" :dataBase
+;
+
+------------------------------------------------------------------------
+-- The database is created considering its template
+-- if no template is desired just remove the "TEMPLATE = my_db" parameter
+------------------------------------------------------------------------
+-- CREATE DATABASE :dataBase TEMPLATE = my_db
+CREATE DATABASE :dataBase
+;
+
+
+\set userName postgres
+;
+\connect :dataBase :userName
+;
+--==========================
+--==========================
+
+
+
+-------------------------------
+-- create the relational schema
+-------------------------------
+DROP TABLE IF EXISTS TRACK;
+--------------------------------
+ CREATE TABLE TRACK
+ (
+ tracking_record_id BIGINT NOT NULL,
+ date_time          TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+ user_gui           VARCHAR,
+ campaign_id		VARCHAR,
+ product_gui		VARCHAR,
+ company			VARCHAR,
+ link 				VARCHAR,
+ tracking_id		VARCHAR,
+ meio				VARCHAR,
+ ip 				VARCHAR,
+ browswer			VARCHAR,
+ session_id			VARCHAR,
+ referer			VARCHAR,
+ cookie_id			VARCHAR
+)
+;
+
+
+-------------------------------
+-- entity integrity constraints
+-- (primary key and unique)
+-------------------------------
+
+ ALTER TABLE TRACK
+ ADD CONSTRAINT pk_TRACK
+ PRIMARY KEY( tracking_record_id);
+;
+
+
+
+----------------------------------------
+-- referential integrity constraints
+-- (foreign key)
+----------------------------------------
+-- ALTER TABLE xxx
+-- ADD CONSTRAINT fk1_xxx
+--    FOREIGN KEY( C1_R1 )
+--    REFERENCES R1( C1 )
+;
+
+
+
+
+
+-- additional information about "client_encoding" in:
+-- http://www.postgresql.org/docs/9.3/static/multibyte.html
+-- \encoding WIN1250
+\encoding UTF8
+;
+
+
+
+
+---------------------------------
+DELETE FROM TRACK;
+---------------------------------
+-- Important info about \copy (psql instruction) and copy (sql statement)
+-- cf., http://www.postgresql.org/docs/9.3/static/sql-copy.html
+-- Do not confuse COPY with the psql instruction \copy.
+-- \copy invokes COPY FROM STDIN or COPY TO STDOUT, and then fetches/stores the data in a file accessible to the psql client.
+-- Thus, file accessibility and access rights depend on the client rather than the server when \copy is used.
+-- 
+-- Therefore, given the above information we will use the ~copy psql instruction (no problems with client permissions
+--
+\COPY track FROM 'C:\Users\duart\OneDrive\Ambiente de Trabalho\Mestrado\AMD\AMD_TP2\z_dataset_JAN_updated.csv' WITH DELIMITER ',' CSV HEADER 
+
+--========================
+-- Testing the copyed data
+--========================
+-- SELECT * FROM TRACK
+ --LIMIT 100
+--;
+
+
+
+-- additional information about "client_encoding" in:
+-- http://www.postgresql.org/docs/9.6/static/multibyte.html
+-- \encoding WIN1250
+;
+
+
+
+---------------------------------
+DROP VIEW IF EXISTS v_export;
+DROP VIEW IF EXISTS v_number_of_events_per_session_number_of_cookies;
+DROP VIEW IF EXISTS v_number_of_cookies_number_of_sessions;
+DROP VIEW IF EXISTS v_cookie_number_of_sessions;
+DROP VIEW IF EXISTS v_cookie_session_number_of_events;
+---------------------------------
+
+
+
+--=============================================================================
+-- total number of events (each tuple is an event)
+--=============================================================================
+SELECT COUNT(*) as totalevents_jan_2012
+FROM track
+;
+
+
+--=============================================================================
+-- total number of distinct cookies (visitors)
+--=============================================================================
+SELECT COUNT(*) AS totalnumberofvisitors_cookie_id_jan_2012
+FROM (SELECT DISTINCT cookie_id FROM track) AS T
+;
+
+
+
+--=============================================================================
+-- aggregate (group) cookies and sessions and get the total number of events
+--=============================================================================
+ CREATE VIEW v_cookie_session_number_of_events( cookie_id, session_id, number_of_events_per_session )
+ AS
+ SELECT cookie_id, session_id, COUNT( * ) as number_of_events_per_session
+ FROM track
+ GROUP BY  track.session_id,track.cookie_id
+ ORDER BY  number_of_events_per_session DESC
+;
+
+
+-- SELECT *
+-- FROM v_cookie_session_number_of_events
+;
+
+
+
+--=============================================================================
+-- aggregate cookie and get the total number of sessions (for each cookie)
+-- and the total number of events for each session
+--=============================================================================
+ CREATE VIEW v_cookie_number_of_sessions( cookie_id, number_of_sessions,number_of_events ) --number_of_events
+ AS
+ SELECT v_cookie_session_number_of_events.cookie_id, COUNT( v_cookie_session_number_of_events.session_id ) as number_of_sessions,
+ SUM(v_cookie_session_number_of_events.number_of_events_per_session) as number_of_events
+ FROM v_cookie_session_number_of_events 
+ GROUP BY v_cookie_session_number_of_events.cookie_id
+ ORDER BY number_of_events DESC
+;
+
+
+
+-- SELECT *
+-- FROM v_cookie_number_of_sessions
+--;
+
+
+
+--=============================================================================
+-- aggregate number of sessions and get total cookies (visitors) at each session
+--=============================================================================
+ CREATE VIEW v_number_of_cookies_number_of_sessions( number_of_cookies, number_of_sessions )
+ AS
+ SELECT COUNT ( v_cookie_number_of_sessions.cookie_id), v_cookie_number_of_sessions.number_of_sessions
+ FROM v_cookie_number_of_sessions
+ GROUP BY  v_cookie_number_of_sessions.number_of_sessions
+ --ORDER BY COUNT ( v_cookie_number_of_sessions.cookie_id) DESC
+;
+
+
+SELECT *
+FROM v_number_of_cookies_number_of_sessions
+;
+
+
+--=============================================================================
+-- aggregate the number of events per session and get the distribution of
+-- the number of cookies (visitors)
+--=============================================================================
+ CREATE VIEW v_number_of_events_per_session_number_of_cookies( number_of_events_per_session, number_of_cookies )
+ AS
+ SELECT v_cookie_session_number_of_events.number_of_events_per_session,COUNT ( v_cookie_session_number_of_events.cookie_id)
+ FROM v_cookie_session_number_of_events
+ GROUP BY v_cookie_session_number_of_events.number_of_events_per_session
+ ORDER BY number_of_events_per_session ASC
+;
+
+
+ SELECT *
+ FROM v_number_of_events_per_session_number_of_cookies
+;
+
+SELECT *
+FROM v_cookie_number_of_sessions WHERE 
+v_cookie_number_of_sessions.number_of_sessions =18;
+
+
+
+
+
+
+
+
+
+--=============================================================================
+-- build a view for the data to be exported and to be transformed into a basket
+-- this may be different depending on the basket you want to build
+--=============================================================================
+ CREATE VIEW v_export( cookie_id, session_id, product_gui )
+ AS
+ SELECT T1.cookie_id, session_id, product_gui
+ FROM ( SELECT *
+        FROM v_cookie_number_of_sessions
+        WHERE number_of_sessions >= 5 and number_of_sessions <= 30 ) AS T1
+      INNER JOIN
+      track AS T2
+      ON ( T1.cookie_id = T2.cookie_id )
+ WHERE product_gui NOT IN ( 'open', 'home' )
+-- -- ORDER BY cookie_id, session_id, product_gui  -- commented for final dataset as this may get too resource consuming
+;
+
+
+-- SELECT *
+-- FROM v_export
+--;
+
+
+
+
+
+--==============
+-- DB connection
+--==============
+\set dataBase db_e_commerce_sample
+;
+\set userName postgres
+;
+\connect :dataBase :userName
+;
+--==========================
+--==========================
+
+
+
+
+
+--==========================
+-- [PRS: ADAPT]
+-- the file path where to write the data
+\set filePath 'C:/Users/duart/OneDrive/Ambiente de Trabalho/Mestrado/AMD/AMD_TP2/scripts/z_dataset_sample_OUT.txt'
+--==========================
+
+
+
+--==============================
+-- export to text data file
+--==============================
+-- the COPY statement executes wihin server context and thus uses postgreSQL user's credentials
+-- very important: "\o" psdql statement redirects the STDOUT into a file path - this way it uses client credentials intead of server credentials
+\o :filePath
+
+
+
+--==============================
+-- the COPY PostgreSQL statement
+-- (for detailed information see: http://www.postgresql.org/docs/9.6/static/sql-copy.html)
+
+-- will write to redirected STDOUT (value of :filePath; cf., statement above)
+COPY ( SELECT cookie_id, product_gui FROM v_export ORDER BY cookie_id )
+TO STDOUT 
+-- WITH ( FORMAT CSV, HEADER TRUE, FORCE_QUOTE (vc1, vc3), QUOTE '"', DELIMITER E'\t' )
+-- WITH ( FORMAT CSV, HEADER TRUE, DELIMITER ';' )
+WITH ( FORMAT CSV, HEADER FALSE, DELIMITER ';' )
+;
+
+--==============================
+
+
+
+
+
+
+
+
+
+
+
